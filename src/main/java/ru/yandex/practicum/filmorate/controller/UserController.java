@@ -1,9 +1,8 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -30,7 +29,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user) {
+    public User createUser(@RequestBody User user) {
         validateUser(user);
         user.setId(nextUserId++);
         users.put(user.getId(), user);
@@ -39,7 +38,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user) {
+    public User updateUser(@RequestBody User user) {
         if (user.getId() == null || !users.containsKey(user.getId())) {
             log.warn("Попытка обновить несуществующего пользователя с ID: {}", user.getId());
             throw new ValidationException("Пользователь с ID: " + user.getId() + " не найден");
@@ -51,6 +50,22 @@ public class UserController {
     }
 
     private void validateUser(User user) {
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            throw new ValidationException("Почта не должна быть пустой");
+        }
+        if (!user.getEmail().contains("@")) {
+            throw new ValidationException("Укажите корректную почту");
+        }
+        if (user.getLogin() == null || user.getLogin().isBlank()) {
+            throw new ValidationException("Логин не может быть пустым");
+        }
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Логин не может содержать пробелы");
+        }
+        if (user.getBirthday() != null && user.getBirthday().isAfter(java.time.LocalDate.now())) {
+            throw new ValidationException("Дата рождения не может быть в будущем");
+        }
+
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.info("Имя пользователя установлено как наименование логина: {}", user.getLogin());

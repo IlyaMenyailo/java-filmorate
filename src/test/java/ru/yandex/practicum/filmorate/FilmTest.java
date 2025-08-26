@@ -1,17 +1,23 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 class FilmTest {
@@ -19,10 +25,13 @@ class FilmTest {
     private FilmController filmController;
 
     private Film film;
+    private Validator validator;
 
     @BeforeEach
     void createFilm() {
         film = createTestFilm();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     @Test
@@ -33,26 +42,29 @@ class FilmTest {
         Assertions.assertEquals(film.getName(), createdFilm.getName());
     }
 
-//    @Test
-//    void shouldThrowExceptionWhenNameIsNull() {
-//        film.setName(null);
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenNameIsBlank() {
-//        film.setName("");
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenDescriptionIsTooLong() {
-//        film.setDescription("a".repeat(201));
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
-//    }
+    @Test
+    void shouldThrowExceptionWhenNameIsNull() {
+        film.setName(null);
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenNameIsBlank() {
+        film.setName("");
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDescriptionIsTooLong() {
+        film.setDescription("a".repeat(201));
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+    }
 
     @Test
     void shouldAcceptDescriptionWhenDescriptionIs200() {
@@ -75,19 +87,21 @@ class FilmTest {
         Assertions.assertDoesNotThrow(() -> filmController.createFilm(film));
     }
 
-//    @Test
-//    void shouldThrowExceptionWhenDurationIsNegative() {
-//        film.setDuration(-1);
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenDurationIsZero() {
-//        film.setDuration(0);
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
-//    }
+    @Test
+    void shouldThrowExceptionWhenDurationIsNegative() {
+        film.setDuration(-1);
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDurationIsZero() {
+        film.setDuration(0);
+
+        Set<ConstraintViolation<Film>> violations = validator.validate(film);
+        assertFalse(violations.isEmpty());
+    }
 
     @Test
     void shouldAcceptDurationWhenItIsOne() {

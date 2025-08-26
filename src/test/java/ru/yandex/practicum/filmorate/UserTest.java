@@ -1,15 +1,22 @@
 package ru.yandex.practicum.filmorate;
 
+import jakarta.validation.ConstraintViolation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
 import java.time.LocalDate;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 public class UserTest {
@@ -19,9 +26,13 @@ public class UserTest {
 
     private User user;
 
+    private Validator validator;
+
     @BeforeEach
-    void createUser() {
+    void setUp() {
         user = createTestUser();
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
     }
 
     @Test
@@ -48,54 +59,61 @@ public class UserTest {
         Assertions.assertEquals(user.getLogin(), createdUser.getName());
     }
 
-//    @Test
-//    void shouldThrowExceptionWhenEmailIsNull() {
-//        user.setEmail(null);
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenEmailIsBlank() {
-//        user.setEmail("        ");
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenEmailIsInvalid() {
-//        user.setEmail("email-without-at");
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenLoginIsNull() {
-//        user.setLogin(null);
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenLoginIsBlank() {
-//        user.setLogin("      ");
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenLoginContainsSpaces() {
-//        user.setLogin("login with spaces");
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
-//    }
-//
-//    @Test
-//    void shouldThrowExceptionWhenBirthdayIsInFuture() {
-//        user.setBirthday(LocalDate.now().plusDays(2));
-//
-//        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
-//    }
+    @Test
+    void shouldThrowExceptionWhenEmailIsNull() {
+        user.setEmail(null);
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEmailIsBlank() {
+        user.setEmail("        ");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEmailIsInvalid() {
+        user.setEmail("email-without-at");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLoginIsNull() {
+        user.setLogin(null);
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLoginIsBlank() {
+        user.setLogin("      ");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenLoginContainsSpaces() {
+        user.setLogin("login with spaces");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenBirthdayIsInFuture() {
+        user.setBirthday(LocalDate.now().plusDays(2));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        assertFalse(violations.isEmpty());
+    }
 
     @Test
     void shouldAcceptBirthdayWhenBirthdayIsToday() {
@@ -106,11 +124,7 @@ public class UserTest {
     }
 
     private User createTestUser() {
-        User user = new User();
-        user.setEmail("test@yandex.ru");
-        user.setLogin("testUserLogin");
-        user.setName("testUserName");
-        user.setBirthday(LocalDate.of(1996, 7, 31));
-        return user;
+        return new User("test@yandex.ru", "testUserLogin", "testUserName",
+                LocalDate.of(1996, 7, 31));
     }
 }

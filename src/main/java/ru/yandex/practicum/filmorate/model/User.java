@@ -22,12 +22,23 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
-    // Если делаю так, то Postman выдает ошибку при проверке на общее имя и логин
-//    public void setName(String name) {
-//        if (name == null || name.isBlank()) {
-//            this.name = login;
-//        } else {
-//            this.name = name;
-//        }
-//    }
+
+    public User(String email, String login, String name, LocalDate birthday) {
+        this.email = email;
+        this.login = login;
+        this.birthday = birthday;
+        if (name == null || name.isBlank()) {
+            this.name = login;
+        } else {
+            this.name = name;
+        }
+    }
+
+    public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            this.name = this.login;
+        } else {
+            this.name = name;
+        }
+    }
 }

@@ -31,7 +31,6 @@ public class UserController {
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
-        validateUser(user); //Оставил validateUser, т.к. если проверяю через User, то в Postman не проходит проверка
         user.setId(nextUserId++);
         users.put(user.getId(), user);
         log.info("Добавлен новый пользователь: {}", user);
@@ -44,16 +43,8 @@ public class UserController {
             log.warn("Попытка обновить несуществующего пользователя с ID: {}", user.getId());
             throw new ValidationException("Пользователь с ID: " + user.getId() + " не найден");
         }
-        validateUser(user);
         users.put(user.getId(), user);
         log.info("Обновлен пользователь: {}", user);
         return user;
-    }
-
-    private void validateUser(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            log.info("Имя пользователя установлено равным логину: {}", user.getLogin());
-        }
     }
 }

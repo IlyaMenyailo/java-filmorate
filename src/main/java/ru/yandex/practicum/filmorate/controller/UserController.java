@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,9 +24,9 @@ public class UserController {
     private long nextUserId = 1;
 
     @GetMapping
-    public Collection<User> getAllUsers() {
+    public List<User> getAllUsers() {
         log.info("Получение всех пользователей. Текущее количество: {}", users.size());
-        return users.values();
+        return (List<User>) users.values();
     }
 
     @PostMapping
@@ -64,11 +65,6 @@ public class UserController {
         }
         if (user.getBirthday() != null && user.getBirthday().isAfter(java.time.LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            log.info("Имя пользователя установлено как наименование логина: {}", user.getLogin());
         }
     }
 }

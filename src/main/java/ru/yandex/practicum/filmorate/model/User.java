@@ -11,4 +11,12 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
+
+    public void setName(String name) {
+        if (name == null || name.isBlank()) {
+            this.name = login;
+        } else {
+            this.name = name;
+        }
+    }
 }

@@ -2,23 +2,30 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+
 import java.time.LocalDate;
+
 import org.junit.jupiter.api.Assertions;
 
+@SpringBootTest
 class FilmTest {
+    @Autowired
     private FilmController filmController;
 
+    private Film film;
+
     @BeforeEach
-    void setUp() {
-        filmController = new FilmController();
+    void createFilm() {
+        film = createTestFilm();
     }
 
     @Test
     void shouldCreateValidFilm() {
-        Film film = createTestFilm();
         Film createdFilm = filmController.createFilm(film);
 
         Assertions.assertNotNull(createdFilm.getId());
@@ -26,8 +33,14 @@ class FilmTest {
     }
 
     @Test
+    void shouldThrowExceptionWhenNameIsNull() {
+        film.setName(null);
+
+        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+    }
+
+    @Test
     void shouldThrowExceptionWhenNameIsBlank() {
-        Film film = createTestFilm();
         film.setName("");
 
         Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
@@ -35,26 +48,51 @@ class FilmTest {
 
     @Test
     void shouldThrowExceptionWhenDescriptionIsTooLong() {
-        Film film = createTestFilm();
         film.setDescription("a".repeat(201));
 
         Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
     }
 
     @Test
+    void shouldAcceptDescriptionWhenDescriptionIs200() {
+        film.setDescription("a".repeat(200));
+
+        Assertions.assertDoesNotThrow(() -> filmController.createFilm(film));
+    }
+
+    @Test
     void shouldThrowExceptionWhenReleaseDateIsTooEarly() {
-        Film film = createTestFilm();
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
 
         Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
     }
 
     @Test
+    void shouldAcceptMinimumReleaseDate() {
+        film.setReleaseDate(LocalDate.of(1895, 12, 28));
+
+        Assertions.assertDoesNotThrow(() -> filmController.createFilm(film));
+    }
+
+    @Test
     void shouldThrowExceptionWhenDurationIsNegative() {
-        Film film = createTestFilm();
         film.setDuration(-1);
 
         Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDurationIsZero() {
+        film.setDuration(0);
+
+        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+    }
+
+    @Test
+    void shouldAcceptDurationWhenItIsOne() {
+        film.setDuration(1);
+
+        Assertions.assertDoesNotThrow(() -> filmController.createFilm(film));
     }
 
     private Film createTestFilm() {

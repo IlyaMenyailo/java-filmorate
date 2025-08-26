@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -36,21 +37,21 @@ class FilmTest {
     void shouldThrowExceptionWhenNameIsNull() {
         film.setName(null);
 
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
     }
 
     @Test
     void shouldThrowExceptionWhenNameIsBlank() {
         film.setName("");
 
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
     }
 
     @Test
     void shouldThrowExceptionWhenDescriptionIsTooLong() {
         film.setDescription("a".repeat(201));
 
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
     }
 
     @Test
@@ -78,14 +79,14 @@ class FilmTest {
     void shouldThrowExceptionWhenDurationIsNegative() {
         film.setDuration(-1);
 
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
     }
 
     @Test
     void shouldThrowExceptionWhenDurationIsZero() {
         film.setDuration(0);
 
-        Assertions.assertThrows(ValidationException.class, () -> filmController.createFilm(film));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> filmController.createFilm(film));
     }
 
     @Test

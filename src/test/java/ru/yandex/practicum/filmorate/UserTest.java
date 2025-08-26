@@ -5,8 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.yandex.practicum.filmorate.controller.UserController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -52,49 +52,49 @@ public class UserTest {
     void shouldThrowExceptionWhenEmailIsNull() {
         user.setEmail(null);
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
     }
 
     @Test
     void shouldThrowExceptionWhenEmailIsBlank() {
         user.setEmail("        ");
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
     }
 
     @Test
     void shouldThrowExceptionWhenEmailIsInvalid() {
         user.setEmail("email-without-at");
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
     }
 
     @Test
     void shouldThrowExceptionWhenLoginIsNull() {
         user.setLogin(null);
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
     }
 
     @Test
     void shouldThrowExceptionWhenLoginIsBlank() {
         user.setLogin("      ");
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
     }
 
     @Test
     void shouldThrowExceptionWhenLoginContainsSpaces() {
         user.setLogin("login with spaces");
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
     }
 
     @Test
     void shouldThrowExceptionWhenBirthdayIsInFuture() {
         user.setBirthday(LocalDate.now().plusDays(2));
 
-        Assertions.assertThrows(ValidationException.class, () -> userController.createUser(user));
+        Assertions.assertThrows(MethodArgumentNotValidException.class, () -> userController.createUser(user));
     }
 
     @Test

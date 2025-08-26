@@ -28,7 +28,7 @@ public class FilmController {
     @GetMapping
     public List<Film> getAllFilms() {
         log.info("Получение всех фильмов. Фильмов: {}", films.size());
-        return (List<Film>) films.values();
+        return List.copyOf(films.values());
     }
 
     @PostMapping

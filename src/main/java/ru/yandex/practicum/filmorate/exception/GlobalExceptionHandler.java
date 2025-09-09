@@ -15,23 +15,23 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(ValidationException e) {
-        log.warn("Ошибка валидации: {}", e.getMessage());
-        return new ErrorResponse("Ошибка валидации", e.getMessage());
+    public ErrorResponse handleValidationException(ValidationException exception) {
+        log.warn("Ошибка валидации: {}", exception.getMessage());
+        return new ErrorResponse("Ошибка валидации", exception.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(NotFoundException e) {
-        log.warn("Объект не найден: {}", e.getMessage());
-        return new ErrorResponse("Объект не найден", e.getMessage());
+    public ErrorResponse handleNotFoundException(NotFoundException exception) {
+        log.warn("Объект не найден: {}", exception.getMessage());
+        return new ErrorResponse("Объект не найден", exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleException(Exception e) {
-        log.error("Внутренняя ошибка сервера", e);
-        return new ErrorResponse("Внутренняя ошибка сервера", e.getMessage());
+    public ErrorResponse handleException(Exception exception) {
+        log.error("Внутренняя ошибка сервера", exception);
+        return new ErrorResponse("Внутренняя ошибка сервера", exception.getMessage());
     }
 
     public record ErrorResponse(String error, String message) {
@@ -39,8 +39,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(MethodArgumentNotValidException e) {
-        String errorMessage = e.getBindingResult().getFieldErrors().stream()
+    public ErrorResponse handleValidationException(MethodArgumentNotValidException exception) {
+        String errorMessage = exception.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
 
@@ -50,8 +50,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NullPointerException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleNullPointerException(NullPointerException e) {
-        log.error("NullPointerException: {}", e.getMessage());
+    public ErrorResponse handleNullPointerException(NullPointerException exception) {
+        log.error("NullPointerException: {}", exception.getMessage());
         return new ErrorResponse("Внутренняя ошибка сервера", "Ошибка обработки данных");
     }
 }

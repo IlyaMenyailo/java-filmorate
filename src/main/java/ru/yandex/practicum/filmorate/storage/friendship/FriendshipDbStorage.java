@@ -1,21 +1,20 @@
 package ru.yandex.practicum.filmorate.storage.friendship;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
-@Primary
 @RequiredArgsConstructor
 public class FriendshipDbStorage implements FriendshipStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        String sql = "MERGE INTO friendships (user_id, friend_id, status) KEY(user_id, friend_id) VALUES (?, ?, 'PENDING')";
+        String sql = "INSERT INTO friendships (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
@@ -42,5 +41,27 @@ public class FriendshipDbStorage implements FriendshipStorage {
         return new HashSet<>(jdbcTemplate.query(sql,
                 new Object[]{userId, otherId},
                 (rs, rowNum) -> rs.getLong("friend_id")));
+    }
+
+    @Override
+    public Map<Long, Set<Long>> getFriendsForUsers(Set<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String inClause = userIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        String sql = "SELECT user_id, friend_id FROM friendships WHERE user_id IN (" + inClause + ")";
+
+        Map<Long, Set<Long>> friendsMap = new HashMap<>();
+        jdbcTemplate.query(sql, rs -> {
+            Long userId = rs.getLong("user_id");
+            Long friendId = rs.getLong("friend_id");
+            friendsMap.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
+        });
+
+        return friendsMap;
     }
 }

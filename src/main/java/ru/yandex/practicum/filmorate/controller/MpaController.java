@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.List;
 
@@ -13,18 +13,17 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class MpaController {
-    private final MpaStorage mpaStorage;
+    private final MpaService mpaService;
 
     @GetMapping
     public List<Mpa> getAllMpa() {
         log.info("Получение всех рейтингов MPA");
-        return mpaStorage.getAll();
+        return mpaService.getAllMpa();
     }
 
     @GetMapping("/{id}")
     public Mpa getMpaById(@PathVariable Long id) {
         log.info("Получение рейтинга MPA с ID: {}", id);
-        return mpaStorage.getById(id)
-                .orElseThrow(() -> new ru.yandex.practicum.filmorate.exception.NotFoundException("Рейтинг MPA с ID " + id + " не найден"));
+        return mpaService.getMpaById(id);
     }
 }

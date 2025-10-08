@@ -1,14 +1,13 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -16,15 +15,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
-@Primary
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmRowMapper filmRowMapper;
 
     @Override
     public List<Film> getAll() {
         String sql = "SELECT f.*, m.name as mpa_name FROM films f LEFT JOIN mpa_ratings m ON f.mpa_id = m.id";
-        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm);
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
         loadGenresForFilms(films);
         loadLikesForFilms(films);
         return films;
@@ -33,7 +32,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> getById(Long id) {
         String sql = "SELECT f.*, m.name as mpa_name FROM films f LEFT JOIN mpa_ratings m ON f.mpa_id = m.id WHERE f.id = ?";
-        List<Film> films = jdbcTemplate.query(sql, this::mapRowToFilm, id);
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, id);
         if (films.isEmpty()) {
             return Optional.empty();
         }
@@ -87,29 +86,6 @@ public class FilmDbStorage implements FilmStorage {
     public void delete(Long id) {
         String sql = "DELETE FROM films WHERE id = ?";
         jdbcTemplate.update(sql, id);
-    }
-
-    private Film mapRowToFilm(java.sql.ResultSet rs, int rowNum) throws java.sql.SQLException {
-        Film film = new Film();
-        film.setId(rs.getLong("id"));
-        film.setName(rs.getString("name"));
-        film.setDescription(rs.getString("description"));
-
-        Date releaseDate = rs.getDate("release_date");
-        if (releaseDate != null) {
-            film.setReleaseDate(releaseDate.toLocalDate());
-        }
-
-        film.setDuration(rs.getInt("duration"));
-
-        if (rs.getLong("mpa_id") != 0) {
-            Mpa mpa = new Mpa();
-            mpa.setId(rs.getLong("mpa_id"));
-            mpa.setName(rs.getString("mpa_name"));
-            film.setMpa(mpa);
-        }
-
-        return film;
     }
 
     private void loadGenresForFilms(List<Film> films) {

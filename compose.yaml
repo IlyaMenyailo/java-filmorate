@@ -1,0 +1,17 @@
+services:
+  h2:
+    image: oscarfonts/h2:2.2.224
+    container_name: h2-database
+    ports:
+      - "1521:1521"   # H2 TCP порт
+      - "8082:8082"   # H2 Web Console порт
+    volumes:
+      - ./volumes/h2:/opt/h2-data
+    environment:
+      - H2_OPTIONS=-ifNotExists
+      - H2_DATABASE_URL=jdbc:h2:file:/opt/h2-data/filmorate;AUTO_SERVER=TRUE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082"]
+      timeout: 5s
+      interval: 10s
+      retries: 5

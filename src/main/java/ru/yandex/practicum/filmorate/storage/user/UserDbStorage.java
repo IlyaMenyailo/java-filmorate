@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,10 +11,10 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
-@Primary
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
@@ -109,5 +108,23 @@ public class UserDbStorage implements UserStorage {
                 new Object[]{user.getId()},
                 (rs, rowNum) -> rs.getLong("friend_id")));
         user.setFriends(friends);
+    }
+
+    @Override
+    public Map<Long, User> getUsersByIds(Set<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String inClause = userIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        String sql = "SELECT * FROM users WHERE id IN (" + inClause + ")";
+
+        List<User> users = jdbcTemplate.query(sql, userRowMapper);
+
+        return users.stream()
+                .collect(Collectors.toMap(User::getId, Function.identity()));
     }
 }

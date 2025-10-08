@@ -1,19 +1,19 @@
 package ru.yandex.practicum.filmorate.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@Service
+@Component
 public class MpaRowMapper implements RowMapper<Mpa> {
     @Override
-    public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public Mpa mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         return new Mpa(
-                rs.getLong("id"),
-                rs.getString("name")
+                resultSet.getLong("id"),
+                resultSet.getString("name")
         );
     }
 }

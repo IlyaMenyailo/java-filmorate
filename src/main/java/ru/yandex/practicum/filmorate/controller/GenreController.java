@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.List;
 
@@ -13,18 +13,17 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class GenreController {
-    private final GenreStorage genreStorage;
+    private final GenreService genreService;
 
     @GetMapping
     public List<Genre> getAllGenres() {
         log.info("Получение всех жанров");
-        return genreStorage.getAll();
+        return genreService.getAllGenres();
     }
 
     @GetMapping("/{id}")
     public Genre getGenreById(@PathVariable Long id) {
         log.info("Получение жанра с ID: {}", id);
-        return genreStorage.getById(id)
-                .orElseThrow(() -> new ru.yandex.practicum.filmorate.exception.NotFoundException("Жанр с ID " + id + " не найден"));
+        return genreService.getGenreById(id);
     }
 }

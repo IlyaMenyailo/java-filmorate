@@ -101,10 +101,17 @@ public class FilmService {
     }
 
     private void validateGenres(Film film) {
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                genreStorage.getById(genre.getId())
-                        .orElseThrow(() -> new NotFoundException("Жанр с ID " + genre.getId() + " не найден"));
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            Set<Long> genreIds = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toSet());
+
+            Set<Long> existingGenreIds = genreStorage.getExistingGenreIds(genreIds);
+
+            if (existingGenreIds.size() != genreIds.size()) {
+                Set<Long> missingGenreIds = new HashSet<>(genreIds);
+                missingGenreIds.removeAll(existingGenreIds);
+                throw new NotFoundException("Жанры с ID " + missingGenreIds + " не найдены");
             }
         }
     }

@@ -1,12 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.like;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Primary
 @RequiredArgsConstructor
 public class LikeDbStorage implements LikeStorage {
     private final JdbcTemplate jdbcTemplate;
@@ -26,7 +24,6 @@ public class LikeDbStorage implements LikeStorage {
     @Override
     public int getLikesCount(Long filmId) {
         String sql = "SELECT COUNT(*) FROM film_likes WHERE film_id = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, filmId);
-        return count != null ? count : 0;
+        return jdbcTemplate.queryForObject(sql, Integer.class, filmId);
     }
 }

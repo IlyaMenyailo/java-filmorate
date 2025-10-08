@@ -36,6 +36,11 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
         return commonFriends;
     }
 
+    @Override
+    public Map<Long, Set<Long>> getFriendsForUsers(Set<Long> userIds) {
+        return Map.of();
+    }
+
     private void removeFromFriends(Long from, Long to) {
         if (friends.containsKey(from)) {
             friends.get(from).remove(to);

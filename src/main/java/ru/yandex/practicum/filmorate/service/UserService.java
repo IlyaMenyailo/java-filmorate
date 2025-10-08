@@ -25,7 +25,7 @@ public class UserService {
 
     public List<User> getAllUsers() {
         List<User> users = userStorage.getAll();
-        users.forEach(this::loadFriendsForUser);
+        loadFriendsForUsers(users);
         return users;
     }
 
@@ -41,7 +41,7 @@ public class UserService {
     }
 
     public User updateUser(User user) {
-        getUserById(user.getId()); // Проверяем существование
+        getUserById(user.getId());
         return userStorage.update(user);
     }
 
@@ -60,13 +60,11 @@ public class UserService {
     }
 
     public List<User> getFriends(Long userId) {
-        getUserById(userId); // Проверяем существование пользователя
+        getUserById(userId);
 
         Set<Long> friendsIds = friendshipStorage.getFriends(userId);
 
-        return friendsIds.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return getUsersByIds(friendsIds);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
@@ -75,13 +73,38 @@ public class UserService {
 
         Set<Long> commonFriendIds = friendshipStorage.getCommonFriends(userId, otherId);
 
-        return commonFriendIds.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return getUsersByIds(commonFriendIds);
     }
 
     private void loadFriendsForUser(User user) {
         Set<Long> friendsIds = friendshipStorage.getFriends(user.getId());
         user.setFriends(friendsIds);
+    }
+
+    private void loadFriendsForUsers(List<User> users) {
+        if (users.isEmpty()) return;
+
+        Set<Long> userIds = users.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Set<Long>> friendsMap = friendshipStorage.getFriendsForUsers(userIds);
+
+        for (User user : users) {
+            user.setFriends(friendsMap.getOrDefault(user.getId(), Collections.emptySet()));
+        }
+    }
+
+    private List<User> getUsersByIds(Set<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, User> usersMap = userStorage.getUsersByIds(userIds);
+
+        return userIds.stream()
+                .map(usersMap::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

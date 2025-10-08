@@ -1,19 +1,19 @@
 package ru.yandex.practicum.filmorate.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@Service
+@Component
 public class GenreRowMapper implements RowMapper<Genre> {
     @Override
-    public Genre mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public Genre mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         return new Genre(
-                rs.getLong("id"),
-                rs.getString("name")
+                resultSet.getLong("id"),
+                resultSet.getString("name")
         );
     }
 }

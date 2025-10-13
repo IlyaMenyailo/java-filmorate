@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,18 +17,23 @@ public class UserService {
     private final FriendshipStorage friendshipStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage, FriendshipStorage friendshipStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("friendshipDbStorage") FriendshipStorage friendshipStorage) {
         this.userStorage = userStorage;
         this.friendshipStorage = friendshipStorage;
     }
 
     public List<User> getAllUsers() {
-        return userStorage.getAll();
+        List<User> users = userStorage.getAll();
+        loadFriendsForUsers(users);
+        return users;
     }
 
     public User getUserById(Long id) {
-        return userStorage.getById(id)
+        User user = userStorage.getById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + id + " не найден"));
+        loadFriendsForUser(user);
+        return user;
     }
 
     public User createUser(User user) {
@@ -36,7 +42,6 @@ public class UserService {
 
     public User updateUser(User user) {
         getUserById(user.getId());
-
         return userStorage.update(user);
     }
 
@@ -57,11 +62,9 @@ public class UserService {
     public List<User> getFriends(Long userId) {
         getUserById(userId);
 
-        Set<Long> friendsId = friendshipStorage.getFriends(userId);
+        Set<Long> friendsIds = friendshipStorage.getFriends(userId);
 
-        return friendsId.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        return getUsersByIds(friendsIds);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
@@ -70,8 +73,38 @@ public class UserService {
 
         Set<Long> commonFriendIds = friendshipStorage.getCommonFriends(userId, otherId);
 
-        return commonFriendIds.stream()
-                .map(this::getUserById)
+        return getUsersByIds(commonFriendIds);
+    }
+
+    private void loadFriendsForUser(User user) {
+        Set<Long> friendsIds = friendshipStorage.getFriends(user.getId());
+        user.setFriends(friendsIds);
+    }
+
+    private void loadFriendsForUsers(List<User> users) {
+        if (users.isEmpty()) return;
+
+        Set<Long> userIds = users.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+
+        Map<Long, Set<Long>> friendsMap = friendshipStorage.getFriendsForUsers(userIds);
+
+        for (User user : users) {
+            user.setFriends(friendsMap.getOrDefault(user.getId(), Collections.emptySet()));
+        }
+    }
+
+    private List<User> getUsersByIds(Set<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, User> usersMap = userStorage.getUsersByIds(userIds);
+
+        return userIds.stream()
+                .map(usersMap::get)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 }

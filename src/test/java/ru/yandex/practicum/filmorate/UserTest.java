@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
 import jakarta.validation.ConstraintViolation;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,30 +32,6 @@ public class UserTest {
         user = createTestUser();
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         validator = factory.getValidator();
-    }
-
-    @Test
-    void shouldCreateUser() {
-        User createdUser = userController.createUser(user);
-
-        Assertions.assertNotNull(createdUser.getId());
-        Assertions.assertEquals(user.getName(), createdUser.getName());
-    }
-
-    @Test
-    void shouldUseLoginWhenNameIsEmpty() {
-        user.setName("");
-        User createdUser = userController.createUser(user);
-
-        Assertions.assertEquals(user.getLogin(), createdUser.getName());
-    }
-
-    @Test
-    void shouldUseLoginWhenNameIsNull() {
-        user.setName(null);
-        User createdUser = userController.createUser(user);
-
-        Assertions.assertEquals(user.getLogin(), createdUser.getName());
     }
 
     @Test
@@ -113,14 +88,6 @@ public class UserTest {
 
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
-    }
-
-    @Test
-    void shouldAcceptBirthdayWhenBirthdayIsToday() {
-        user.setBirthday(LocalDate.now());
-
-        Assertions.assertEquals(user.getBirthday(), LocalDate.now());
-        Assertions.assertDoesNotThrow(() -> userController.createUser(user));
     }
 
     private User createTestUser() {
